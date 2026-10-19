@@ -1,5 +1,29 @@
 #include <stdlib.h>
 
+#ifdef TARGET_N3DS
+#define u64 __3ds_u64
+#define s64 __3ds_s64
+#define u32 __3ds_u32
+#define vu32 __3ds_vu32
+#define vs32 __3ds_vs32
+#define s32 __3ds_s32
+#define u16 __3ds_u16
+#define s16 __3ds_s16
+#define u8 __3ds_u8
+#define s8 __3ds_s8
+#include <3ds/archive.h>
+#undef u64
+#undef s64
+#undef u32
+#undef vu32
+#undef vs32
+#undef s32
+#undef u16
+#undef s16
+#undef u8
+#undef s8
+#endif
+
 #ifdef TARGET_WEB
 #include <emscripten.h>
 #include <emscripten/html5.h>
@@ -34,7 +58,7 @@
 
 #include "compat.h"
 
-#define CONFIG_FILE "sm64config.txt"
+#include "pc/utils_3ds.h"
 
 OSMesg D_80339BEC;
 OSMesgQueue gSIEventMesgQueue;
@@ -181,6 +205,29 @@ static void save_config(void) {
     configfile_save(CONFIG_FILE);
 }
 
+#ifdef TARGET_N3DS
+static bool mount_save_data(void) {
+    const FS_Path saveDataPath = fsMakePath(PATH_EMPTY, "");
+    Result result = archiveMount(ARCHIVE_SAVEDATA, saveDataPath, "save");
+
+    if (R_FAILED(result) && R_MODULE(result) == RM_FS && R_SUMMARY(result) == RS_INVALIDSTATE &&
+        R_DESCRIPTION(result) == 340) {
+        // "blocks" argument is a block size on real firmware (0x200 on official titles). Size is specified in TMD.
+        result = FSUSER_FormatSaveData(ARCHIVE_SAVEDATA, fsMakePath(PATH_EMPTY, ""), 0x200, 8, 32, 8, 32, false);
+        if (R_SUCCEEDED(result)) {
+            result = archiveMount(ARCHIVE_SAVEDATA, saveDataPath, "save");
+        }
+    }
+
+    if (R_FAILED(result)) {
+        puts("Failed to initialize CIA save data archive.");
+        error_box(true, true, "Failed to initialize CIA save data archive.");
+        return false;
+    }
+    return true;
+}
+#endif
+
 static void on_fullscreen_changed(bool is_now_fullscreen) {
     configFullscreen = is_now_fullscreen;
 }
@@ -189,6 +236,12 @@ void main_func(void) {
     static u8 pool[DOUBLE_SIZE_ON_64_BIT(0x165000)] __attribute__ ((aligned(16)));
     main_pool_init(pool, pool + sizeof(pool));
     gEffectsMemoryPool = mem_pool_init(0x4000, MEMORY_POOL_LEFT);
+
+#ifdef TARGET_N3DS
+    if (!mount_save_data()) {
+        return;
+    }
+#endif
 
     configfile_load(CONFIG_FILE);
     atexit(save_config);

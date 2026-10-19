@@ -289,4 +289,7 @@ void configfile_save(const char *filename) {
     }
 
     fclose(file);
+#ifdef TARGET_N3DS
+    archiveCommitSaveData("save");
+#endif
 }

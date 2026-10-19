@@ -1101,7 +1101,7 @@ void newcam_config_save(void)
     puppycam_invertY = newcam_invertY;
     puppycam_degrade = newcam_degrade;
 
-    configfile_save("sm64config.txt");
+    configfile_save(CONFIG_FILE);
 }
 #endif
 

@@ -42,8 +42,6 @@ static struct gfx_3ds_menu_texture menu_cleft_tex, menu_cright_tex, menu_cdown_t
 #define MENU_RIGHT_X 208
 #define MENU_SINGLE_CENTER_X 128
 
-#define CONFIG_FILE "sm64config.txt"
-
 static bool is_inside_box(int pos_x, int pos_y, int x, int y, int width, int height);
 
 static void gfx_3ds_menu_reset_state(void)

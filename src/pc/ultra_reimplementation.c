@@ -3,6 +3,33 @@
 #include "lib/src/libultra_internal.h"
 #include "macros.h"
 
+#ifdef TARGET_N3DS
+#define u64 __3ds_u64
+#define s64 __3ds_s64
+#define u32 __3ds_u32
+#define vu32 __3ds_vu32
+#define vs32 __3ds_vs32
+#define s32 __3ds_s32
+#define u16 __3ds_u16
+#define s16 __3ds_s16
+#define u8 __3ds_u8
+#define s8 __3ds_s8
+#include "3ds/archive.h"
+#undef u64
+#undef s64
+#undef u32
+#undef vu32
+#undef vs32
+#undef s32
+#undef u16
+#undef s16
+#undef u8
+#undef s8
+#define EEPROM_SAVE_FILE "save:/sm64_save_file.bin"
+#else
+#define EEPROM_SAVE_FILE "sm64_save_file.bin"
+#endif
+
 #ifdef TARGET_WEB
 #include <emscripten.h>
 #endif
@@ -146,7 +173,7 @@ s32 osEepromLongRead(UNUSED OSMesgQueue *mq, u8 address, u8 *buffer, int nbytes)
         ret = 0;
     }
 #else
-    FILE *fp = fopen("sm64_save_file.bin", "rb");
+    FILE *fp = fopen(EEPROM_SAVE_FILE, "rb");
     if (fp == NULL) {
         return -1;
     }
@@ -176,12 +203,17 @@ s32 osEepromLongWrite(UNUSED OSMesgQueue *mq, u8 address, u8 *buffer, int nbytes
     }, content);
     s32 ret = 0;
 #else
-    FILE* fp = fopen("sm64_save_file.bin", "wb");
+    FILE* fp = fopen(EEPROM_SAVE_FILE, "wb");
     if (fp == NULL) {
         return -1;
     }
     s32 ret = fwrite(content, 1, 512, fp) == 512 ? 0 : -1;
     fclose(fp);
+#ifdef TARGET_N3DS
+    if (ret == 0) {
+        archiveCommitSaveData("save");
+    }
+#endif
 #endif
     return ret;
 }
