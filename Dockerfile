@@ -1,23 +1,12 @@
-FROM ubuntu:18.04 as build
+FROM devkitpro/devkitarm:latest
 
 RUN apt-get update && \
     apt-get install -y \
       binutils-mips-linux-gnu \
       bsdmainutils \
       build-essential \
-      libaudiofile-dev \
-      pkg-config \
-      python3 \
-      wget \
       unzip \
       zlib1g-dev
-
-RUN wget https://github.com/devkitPro/pacman/releases/download/v1.0.2/devkitpro-pacman.amd64.deb \
-  -O devkitpro.deb && \
-  echo ebc9f199da9a685e5264c87578efe29309d5d90f44f99f3dad9dcd96323fece3 devkitpro.deb | sha256sum --check && \
-  apt install -y ./devkitpro.deb && \
-  rm devkitpro.deb
-RUN dkp-pacman -Syu 3ds-dev --noconfirm
 
 RUN wget https://github.com/3DSGuy/Project_CTR/releases/download/makerom-v0.17/makerom-v0.17-ubuntu_x86_64.zip \
   -O makerom.zip && \
@@ -26,12 +15,10 @@ RUN wget https://github.com/3DSGuy/Project_CTR/releases/download/makerom-v0.17/m
   chmod +x /opt/devkitpro/tools/bin/makerom && \
   rm makerom.zip
 
-RUN mkdir /sm64
-WORKDIR /sm64
-
-ENV PATH="/opt/devkitpro/tools/bin/:/sm64/tools:${PATH}"
-ENV DEVKITPRO=/opt/devkitpro
-ENV DEVKITARM=/opt/devkitpro/devkitARM
-ENV DEVKITPPC=/opt/devkitpro/devkitPPC
-
-CMD echo 'usage: docker run --rm --mount type=bind,source="$(pwd)",destination=/sm64 sm64 make VERSION=${VERSION:-us} -j4'
+RUN wget https://github.com/diasurgical/bannertool/releases/download/1.2.0/bannertool.zip \
+  -O bannertool.zip && \
+  echo 69768596f836acb3e3aeaa66e47c6ba560dde813c6dfcd33c8afc25fe29b7524  bannertool.zip | sha256sum --check && \
+  unzip -d /tmp/bannertool bannertool.zip && \
+  mv /tmp/bannertool/linux-x86_64/bannertool /opt/devkitpro/tools/bin/bannertool && \
+  chmod +x /opt/devkitpro/tools/bin/bannertool && \
+  rm -rf /tmp/bannertool bannertool.zip
