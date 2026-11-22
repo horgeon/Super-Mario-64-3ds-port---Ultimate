@@ -181,6 +181,17 @@ static void save_config(void) {
     configfile_save(CONFIG_FILE);
 }
 
+#ifdef TARGET_N3DS
+static bool checkN3DS() {
+    bool isNew3DS = false;
+    if (R_SUCCEEDED(APT_CheckNew3DS(&isNew3DS))) {
+        return isNew3DS;
+    }
+
+    return false;
+}
+#endif
+
 static void on_fullscreen_changed(bool is_now_fullscreen) {
     configFullscreen = is_now_fullscreen;
 }
@@ -189,6 +200,15 @@ void main_func(void) {
     static u8 pool[DOUBLE_SIZE_ON_64_BIT(0x165000)] __attribute__ ((aligned(16)));
     main_pool_init(pool, pool + sizeof(pool));
     gEffectsMemoryPool = mem_pool_init(0x4000, MEMORY_POOL_LEFT);
+
+#ifdef TARGET_N3DS
+    gfxInitDefault();
+    atexit(gfxExit);
+
+    if (checkN3DS()) {
+        osSetSpeedupEnable(true);
+    }
+#endif
 
     configfile_load(CONFIG_FILE);
     atexit(save_config);

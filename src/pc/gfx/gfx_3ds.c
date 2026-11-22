@@ -69,15 +69,6 @@ static s32 appSuspendCounter = 0; // > 0 when the 3DS lid is closed or home butt
 static u8 n3dsModel = 0;
 static aptHookCookie apt_hook_cookie;
 
-static bool checkN3DS()
-{
-    bool isNew3DS = false;
-    if (R_SUCCEEDED(APT_CheckNew3DS(&isNew3DS)))
-        return isNew3DS;
-
-    return false;
-}
-
 static void deinitialise_screens()
 {
     if (gTarget != NULL)
@@ -315,11 +306,6 @@ static void gfx_3ds_apt_hook(APT_HookType hook, UNUSED void* param)
 
 static void gfx_3ds_init(UNUSED const char *game_name, UNUSED bool start_in_fullscreen)
 {
-    if (checkN3DS())
-        osSetSpeedupEnable(true);
-
-    gfxInitDefault();
-
     Result rc = cfguInit();
     if (R_SUCCEEDED(rc))
     {
