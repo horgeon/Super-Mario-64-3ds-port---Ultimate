@@ -3,6 +3,12 @@
 
 #include <stdbool.h>
 
+#ifdef TARGET_N3DS
+#define CONFIG_FILE "save:/sm64config.txt"
+#else
+#define CONFIG_FILE "sm64config.txt"
+#endif
+
 extern bool         configFullscreen;
 extern unsigned int configKeyA;
 extern unsigned int configKeyB;

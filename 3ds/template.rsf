@@ -37,7 +37,7 @@ AccessControlInfo:
   FileSystemAccess:
    #- CategorySystemApplication
    #- CategoryHardwareCheck
-   #- CategoryFileSystemTool
+   - CategoryFileSystemTool
    #- Debug
    #- TwlCardBackup
    #- TwlNandData
@@ -186,7 +186,7 @@ AccessControlInfo:
 
 
 SystemControlInfo:
-  SaveDataSize: 0KB # Change if the app uses savedata
+  SaveDataSize: 64KB
   RemasterVersion: 0
   StackSize: 0x40000
 

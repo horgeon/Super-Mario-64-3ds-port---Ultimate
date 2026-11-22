@@ -288,5 +288,18 @@ void configfile_save(const char *filename) {
         }
     }
 
-    fclose(file);
+    bool writeFailed = ferror(file) != 0;
+    if (fclose(file) != 0) {
+        writeFailed = true;
+    }
+    if (writeFailed) {
+        fprintf(stderr, "Failed to write configuration file '%s'.\n", filename);
+        return;
+    }
+#ifdef TARGET_N3DS
+    Result result = archiveCommitSaveData("save");
+    if (R_FAILED(result)) {
+        fprintf(stderr, "Failed to commit configuration save data (%08lx).\n", (unsigned long)result);
+    }
+#endif
 }
